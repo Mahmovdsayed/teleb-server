@@ -1,7 +1,9 @@
 import type { MiddlewareHandler } from "hono";
+import { getCookie } from "hono/cookie";
 import { t, type Lang } from "../i18n";
+import { tokenService } from "../infrastructure/auth/token";
 
-interface AuthUser {
+interface User {
   id: string;
   name: string;
   email: string;
@@ -10,20 +12,39 @@ interface AuthUser {
 
 declare module "hono" {
   interface ContextVariableMap {
-    authUser: AuthUser;
+    user: User;
   }
 }
 
-const getCookieValue = (cookieHeader: string, name: string): string | undefined => {
-  const pairs = cookieHeader.split(";").map((c) => c.trim().split("=", 2));
-  const match = pairs.find(([k]) => k === name);
-  return match?.[1] ? decodeURIComponent(match[1]) : undefined;
-};
+export const requireAuth = (): MiddlewareHandler<{Variables: { lang: Lang }}> => {
+  return async (c, next) => {
+    const token = getCookie(c, "access_token");
 
+    if (!token) {
+      return c.json({
+          success: false,
+          message: t(c, "common.unauthorized"),
+        });
+    }
 
-export const requireAuth: MiddlewareHandler<{Variables: { lang: Lang }}> = async (c, next) => {
-  const token = c.req.header("authorization");
-  if (!token) return c.json({ success: false, message: t(c, "common.unauthorized")});
-  
-  await next();
+    try {
+      const payload = await tokenService.verify(token);
+
+      const user: User = {
+        id: payload.id,
+        name: payload.name,
+        email: payload.email,
+        role: payload.role,
+      };
+
+      c.set("user", user);
+
+      await next();
+    } catch {
+      return c.json({
+          success: false,
+          message: t(c, "common.unauthorized"),
+        });
+    }
+  };
 };

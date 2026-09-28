@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const singUpSchema = z.compile(
+export const signUpSchema = z.compile(
   z.object({
     name: z.string().min(1).max(20),
     email: z.string().trim().toLowerCase().email(),
@@ -15,5 +15,5 @@ export const signInSchema = z.compile(
   }),
 );
 
-export type SignUpInput = z.infer<typeof singUpSchema>;
+export type SignUpInput = z.infer<typeof signUpSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;

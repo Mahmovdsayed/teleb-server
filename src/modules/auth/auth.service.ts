@@ -6,7 +6,7 @@ import { PasswordService } from "../../infrastructure/auth/password";
 
 interface IAuthService {
   signUp(input: SignUpInput): Promise<any>;
-  //   signIn(input: SignInInput): Promise<any>;
+  signIn(input: SignInInput): Promise<any>;
 }
 
 class AuthService implements IAuthService {
@@ -26,8 +26,23 @@ class AuthService implements IAuthService {
         name: input.name,
         email: input.email,
         password: hashedPassword,
+        role: "user",
       })
       .returning();
+
+    return user;
+  }
+
+  public async signIn(input: SignInInput): Promise<any> {
+    const [user] = await db
+      .select()
+      .from(userTable)
+      .where(eq(userTable.email, input.email))
+      .limit(1);
+
+    if (!user || !user.password) throw new Error("INVALID_CREDENTIALS");
+    const isPasswordValid = await PasswordService.verifyPassword({password: input.password, hash: user.password});
+    if (!isPasswordValid) throw new Error("INVALID_CREDENTIALS");
 
     return user;
   }
