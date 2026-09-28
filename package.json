@@ -1,7 +1,7 @@
 {
   "name": "teleb-server",
   "scripts": {
-    "dev": "bun run --bun --hot src/index.ts"
+    "dev": "bun run --bun --hot src/server.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
