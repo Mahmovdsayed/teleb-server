@@ -19,6 +19,7 @@
     "noEmit": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node"]
+    "types": ["bun"],
+    "typeRoots": ["./node_modules/@types"]
   }
 }
