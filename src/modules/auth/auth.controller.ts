@@ -3,7 +3,7 @@ import type { SignInInput, SignUpInput } from "./auth.schemas";
 import type { AppContext } from "../../types/http";
 import { t } from "../../i18n";
 import { tokenService } from "../../infrastructure/auth/token";
-import { setCookie } from "hono/cookie";
+import { deleteCookie, setCookie } from "hono/cookie";
 
 type SignUpContext = AppContext<{ out: { json: SignUpInput } }>;
 type SignInContext = AppContext<{ out: { json: SignInInput } }>;
@@ -44,15 +44,15 @@ export const signInController = async (c: SignInContext) => {
 
     setCookie(c, "access_token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: Bun.env.NODE_ENV === "production",
       sameSite: "lax",
-      ...(process.env.NODE_ENV === "production" && {
+      ...(Bun.env.NODE_ENV === "production" && {
         domain: ".teleb-furniture.com",
       }),
       path: "/",
       maxAge: 7 * 24 * 60 * 60,
     });
-    
+
     return c.json({
       success: true,
       message: t(c, "auth.signinSuccess"),
@@ -63,7 +63,6 @@ export const signInController = async (c: SignInContext) => {
         email: user.email,
       },
     });
-
   } catch (error) {
     if (error instanceof Error && error.message === "INVALID_CREDENTIALS") {
       return c.json({
@@ -74,4 +73,18 @@ export const signInController = async (c: SignInContext) => {
 
     throw error;
   }
+};
+
+export const logOutController = async (c: AppContext) => {
+  deleteCookie(c, "access_token", {
+    path: "/",
+    ...(Bun.env.NODE_ENV === "production" && {
+      domain: ".teleb-furniture.com",
+    }),
+  });
+
+  return c.json({
+    success: true,
+    message: t(c, "auth.logoutSuccess"),
+  });
 };

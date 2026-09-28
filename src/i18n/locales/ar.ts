@@ -11,5 +11,6 @@ export const ar = {
     signupSuccess: "تم إنشاء الحساب بنجاح",
     invalidCredentials: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
     signinSuccess: "تم تسجيل الدخول بنجاح",
+    logoutSuccess: "تم تسجيل الخروج بنجاح",
   },
 } as const;

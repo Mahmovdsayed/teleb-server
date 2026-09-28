@@ -11,5 +11,6 @@ export const en = {
     signupSuccess: "Account created successfully",
     invalidCredentials: "The email or password is incorrect",
     signinSuccess: "Signed in successfully",
+    logoutSuccess: "Logged out successfully",
   },
 } as const;
