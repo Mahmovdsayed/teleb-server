@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { sign, verify } from "hono/jwt";
 import { env } from "../../config/env";
+import type { User } from "../../types/user";
 
 const tokenPayloadSchema = z.compile(
   z.object({
-    id: z.string(),
+    id: z.number().int().positive(),
     email: z.email(),
     role: z.string(),
     name: z.string(),
@@ -15,12 +16,6 @@ const tokenPayloadSchema = z.compile(
 
 type TokenPayload = z.infer<typeof tokenPayloadSchema>;
 
-interface User {
-  id: string;
-  email: string;
-  role: string;
-  name: string;
-}
 
 class TokenService {
   public async create(user: User) {

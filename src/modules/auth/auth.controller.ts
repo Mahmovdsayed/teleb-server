@@ -36,7 +36,7 @@ export const signInController = async (c: SignInContext) => {
     const user = await authService.signIn(input);
 
     const token = await tokenService.create({
-      id: user.id.toString(),
+      id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
@@ -56,7 +56,6 @@ export const signInController = async (c: SignInContext) => {
     return c.json({
       success: true,
       message: t(c, "auth.signinSuccess"),
-      token,
       data: {
         id: user.id,
         name: user.name,

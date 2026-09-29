@@ -5,6 +5,7 @@ export const ar = {
     serverError: "حدث خطأ ما",
     unauthorized: "غير مصرح لك بالوصول",
     forbidden: "ليس لديك صلاحية للوصول إلى هذا المورد",
+    internalServerError: "حدث خطأ ما. يرجى المحاولة مرة أخرى لاحقًا.",
   },
   auth: {
     emailAlreadyExists: "البريد الإلكتروني مستخدم بالفعل",
@@ -12,5 +13,12 @@ export const ar = {
     invalidCredentials: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
     signinSuccess: "تم تسجيل الدخول بنجاح",
     logoutSuccess: "تم تسجيل الخروج بنجاح",
+  },
+  collection: {
+    created: "تم إنشاء المجموعة بنجاح",
+    createFailed: "فشل إنشاء المجموعة",
+    updated: "تم تحديث المجموعة بنجاح",
+    updateFailed: "فشل تحديث المجموعة",
+    notFound: "المجموعة غير موجودة",
   },
 } as const;

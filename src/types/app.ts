@@ -1,2 +1,3 @@
 import type { Lang } from "../i18n";
-export type AppEnv = { Variables: { lang: Lang } };
+import type { User } from "./user";
+export type AppEnv = { Variables: { lang: Lang; user: User } };
