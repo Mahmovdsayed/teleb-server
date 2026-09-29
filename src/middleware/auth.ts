@@ -17,13 +17,8 @@ declare module "hono" {
 export const requireAuth = (): MiddlewareHandler<AppEnv> => {
   return async (c, next) => {
     const token = getCookie(c, "access_token");
-
-    if (!token) {
-      return c.json({
-        success: false,
-        message: t(c, "common.unauthorized"),
-      });
-    }
+    if (!token) return c.json({success: false, message: t(c, "common.unauthorized")});
+    
 
     try {
       const payload = await tokenService.verify(token);
@@ -39,20 +34,9 @@ export const requireAuth = (): MiddlewareHandler<AppEnv> => {
         .where(eq(userTable.id, payload.id))
         .limit(1);
 
-      if (!current) {
-        return c.json({
-          success: false,
-          message: t(c, "common.unauthorized"),
-        });
-      }
+      if (!current) return c.json({success: false, message: t(c, "common.unauthorized")});
+      if (current.role !== "admin") return c.json({success: false, message: t(c, "common.forbidden")});
       
-      if (current.role !== "admin") {
-        return c.json({
-          success: false,
-          message: t(c, "common.forbidden"),
-        });
-      }
-
       const user: User = {
         id: current.id,
         name: current.name,

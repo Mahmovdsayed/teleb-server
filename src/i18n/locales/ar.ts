@@ -20,5 +20,7 @@ export const ar = {
     updated: "تم تحديث المجموعة بنجاح",
     updateFailed: "فشل تحديث المجموعة",
     notFound: "المجموعة غير موجودة",
+    deleted: "تم حذف المجموعة بنجاح",
+    deleteFailed: "فشل حذف المجموعة",
   },
 } as const;

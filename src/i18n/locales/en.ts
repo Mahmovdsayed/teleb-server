@@ -20,5 +20,7 @@ export const en = {
     updated: "Collection updated successfully",
     updateFailed: "Failed to update collection",
     notFound: "Collection not found",
+    deleted: "Collection deleted successfully",
+    deleteFailed: "Failed to delete collection",
   },
 } as const;

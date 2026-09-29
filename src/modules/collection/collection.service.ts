@@ -1,13 +1,10 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "../../database";
 import { collectionTable } from "../../database/schemas";
-import type {
-  CreateCollectionInput,
-  UpdateCollectionInput,
-} from "./collection.schemas";
+import type { CreateCollectionInput, UpdateCollectionInput } from "./collection.schemas";
 
 interface ICollectionService {
-  get(): Promise<(typeof collectionTable.$inferSelect)[]>;
+  get(): Promise<Omit<typeof collectionTable.$inferSelect, "userId">[]>;
   create(input: CreateCollectionInput, userId: number) : Promise<typeof collectionTable.$inferSelect>;
   update(input: UpdateCollectionInput, collectionId: number, userId: number): Promise<typeof collectionTable.$inferSelect>;
   delete(collectionId: number, userId: number): Promise<void>;
@@ -15,7 +12,14 @@ interface ICollectionService {
 
 class CollectionService implements ICollectionService {
   public async get() {
-    return db.select().from(collectionTable);
+    return db.select({
+      id: collectionTable.id,
+      arName: collectionTable.arName,
+      enName: collectionTable.enName,
+      icon: collectionTable.icon,
+      createdAt: collectionTable.createdAt,
+      updatedAt: collectionTable.updatedAt,
+    }).from(collectionTable);
   }
   public async create(input: CreateCollectionInput, userId: number) {
     const [collection] = await db

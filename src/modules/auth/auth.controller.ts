@@ -13,19 +13,9 @@ export const signUpController = async (c: SignUpContext) => {
     const input = c.req.valid("json");
     const user = await authService.signUp(input);
 
-    return c.json({
-      success: true,
-      message: t(c, "auth.signupSuccess"),
-      data: user,
-    });
+    return c.json({success: true, message: t(c, "auth.signupSuccess"), data: user});
   } catch (error) {
-    if (error instanceof Error && error.message === "EMAIL_ALREADY_EXISTS") {
-      return c.json({
-        success: false,
-        message: t(c, "auth.emailAlreadyExists"),
-      });
-    }
-
+    if (error instanceof Error && error.message === "EMAIL_ALREADY_EXISTS") return c.json({success: false, message: t(c, "auth.emailAlreadyExists")});
     throw error;
   }
 };
@@ -34,13 +24,7 @@ export const signInController = async (c: SignInContext) => {
   try {
     const input = c.req.valid("json");
     const user = await authService.signIn(input);
-
-    const token = await tokenService.create({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    });
+    const token = await tokenService.create({id: user.id, name: user.name, email: user.email, role: user.role });
 
     setCookie(c, "access_token", token, {
       httpOnly: true,
@@ -53,22 +37,10 @@ export const signInController = async (c: SignInContext) => {
       maxAge: 7 * 24 * 60 * 60,
     });
 
-    return c.json({
-      success: true,
-      message: t(c, "auth.signinSuccess"),
-      data: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      },
-    });
+    return c.json({success: true, message: t(c, "auth.signinSuccess"), data: {id: user.id, name: user.name, email: user.email}});
   } catch (error) {
     if (error instanceof Error && error.message === "INVALID_CREDENTIALS") {
-      return c.json({
-        success: false,
-        message: t(c, "auth.invalidCredentials"),
-      });
-    }
+      return c.json({success: false, message: t(c, "auth.invalidCredentials")})}
 
     throw error;
   }
@@ -82,8 +54,5 @@ export const logOutController = async (c: AppContext) => {
     }),
   });
 
-  return c.json({
-    success: true,
-    message: t(c, "auth.logoutSuccess"),
-  });
+  return c.json({success: true, message: t(c, "auth.logoutSuccess")});
 };
