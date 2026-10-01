@@ -50,7 +50,7 @@ export const rateLimiter = (options: RateLimitOptions): MiddlewareHandler => {
       : `${c.req.method}:${c.req.path}:${ip}:ua:${c.req.header("user-agent") ?? "unknown"}`;
 
     const key = `teleb:rate-limit:${identifier}`;
-    console.log(key)
+
     try {
       const count = await redis.incr(key);
       if (count === 1) {
@@ -150,7 +150,8 @@ export const globalRateLimiter = (
     max: 300,
     message: "Too many requests from this IP, please try again later.",
     standardHeaders: true,
-    keyGenerator: (c) => `global:${extractIp(c)}:ua:${c.req.header("user-agent") ?? "unknown"}`,
+    keyGenerator: (c) =>
+      `global:${extractIp(c)}:ua:${c.req.header("user-agent") ?? "unknown"}`,
     ...options,
   });
 
@@ -163,10 +164,10 @@ export const authRateLimiter = (
     skipSuccessfulRequests: true,
     message: "Too many login attempts, please try again later.",
     standardHeaders: true,
-    keyGenerator: (c) => `auth:${extractIp(c)}:ua:${c.req.header("user-agent") ?? "unknown"}`,
+    keyGenerator: (c) =>
+      `auth:${extractIp(c)}:ua:${c.req.header("user-agent") ?? "unknown"}`,
     ...options,
   });
-
 
 export const strictRateLimiter = (
   options?: Partial<RateLimitOptions>,
@@ -176,7 +177,8 @@ export const strictRateLimiter = (
     max: 5,
     message: "Too many attempts, please try again later.",
     standardHeaders: true,
-    keyGenerator: (c) => `strict:${extractIp(c)}:ua:${c.req.header("user-agent") ?? "unknown"}`,
+    keyGenerator: (c) =>
+      `strict:${extractIp(c)}:ua:${c.req.header("user-agent") ?? "unknown"}`,
     ...options,
   });
 
@@ -188,10 +190,10 @@ export const adminRateLimiter = (
     max: 30,
     message: "Too many requests, please try again later.",
     standardHeaders: true,
-    keyGenerator: (c) => `admin:${extractIp(c)}:ua:${c.req.header("user-agent") ?? "unknown"}`,
+    keyGenerator: (c) =>
+      `admin:${extractIp(c)}:ua:${c.req.header("user-agent") ?? "unknown"}`,
     ...options,
   });
-
 
 export const apiKeyRateLimiter = (
   options?: Partial<RateLimitOptions>,
@@ -203,11 +205,12 @@ export const apiKeyRateLimiter = (
     standardHeaders: true,
     keyGenerator: (c) => {
       const apiKey = c.req.header("x-api-key");
-      return apiKey ? `apikey:${apiKey}` : `apikey:anonymous:${extractIp(c)}:ua:${c.req.header("user-agent") ?? "unknown"}`;
+      return apiKey
+        ? `apikey:${apiKey}`
+        : `apikey:anonymous:${extractIp(c)}:ua:${c.req.header("user-agent") ?? "unknown"}{time:${Math.floor(Date.now() / (60 * 60 * 1000))}}`;
     },
     ...options,
   });
-
 
 export const resetRateLimit = async (identifier: string): Promise<void> => {
   if (!redis || redis.status !== "ready") {
