@@ -6,4 +6,5 @@ export const env = {
   DATABASE_URL: Bun.env.DATABASE_URL || "",
   LOGIN_SIG: Bun.env.LOGIN_SIG || "",
   JWT_SECRET: Bun.env.JWT_SECRET || "",
+  REDIS_URL: Bun.env.REDIS_URL || "",
 };

@@ -1,4 +1,5 @@
 import { t } from "../../i18n";
+import { invalidateCache } from "../../middleware/cache";
 import type { AppContext } from "../../types/http";
 import type { ParamRequest } from "../../validation/global/param.validation";
 import type { CreateCollectionInput, UpdateCollectionInput } from "./collection.schemas";
@@ -14,6 +15,7 @@ export const createCollectionController = async (c: CreateCollection) => {
     const input = c.req.valid("json");
 
     const newCollection = await collection.create(input, id);
+    await invalidateCache("Collections");
     return c.json({success: true, message: t(c, "collection.created"), data: newCollection});
   } catch (error) {
     if (error instanceof Error && error.message === "COLLECTION_CREATE_FAILED") return c.json({success: false, message: t(c, "collection.createFailed")});
@@ -28,6 +30,7 @@ export const updateCollectionController = async (c: UpdateCollection) => {
     const { id } = c.req.valid("param");
 
     const updatedCollection = await collection.update(input, id, user.id);
+    await invalidateCache("Collections");
     return c.json({success: true, message: t(c, "collection.updated"), data: updatedCollection});
   } catch (error) {
     if (error instanceof Error && error.message === "COLLECTION_NOT_FOUND") return c.json({ success: false, message: t(c, "collection.notFound") });
@@ -41,6 +44,7 @@ export const deleteCollectionController = async (c: DeleteCollection) => {
     const { id } = c.req.valid("param");
 
     await collection.delete(id, user.id);
+    await invalidateCache("Collections");
     return c.json({success: true, message: t(c, "collection.deleted")});
   } catch (error) {
     if (error instanceof Error && error.message === "COLLECTION_NOT_FOUND") return c.json({success: false, message: t(c, "collection.notFound")});
