@@ -207,7 +207,7 @@ export const apiKeyRateLimiter = (
       const apiKey = c.req.header("x-api-key");
       return apiKey
         ? `apikey:${apiKey}`
-        : `apikey:anonymous:${extractIp(c)}:ua:${c.req.header("user-agent") ?? "unknown"}{time:${Math.floor(Date.now() / (60 * 60 * 1000))}}`;
+        : `apikey:anonymous:${extractIp(c)}:ua:${c.req.header("user-agent") ?? "unknown"}`;
     },
     ...options,
   });
