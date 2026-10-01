@@ -8,6 +8,7 @@ import { compress } from "hono/compress";
 import { secureHeaders } from "hono/secure-headers";
 import { poweredBy } from "hono/powered-by";
 import redis from "./helpers/redis";
+import { globalRateLimiter } from "./middleware/rate-limit";
 
 const app = new Hono<AppEnv>().basePath("/v1");
 
@@ -15,6 +16,8 @@ app.use(logger());
 app.use(compress());
 app.use(secureHeaders());
 app.use("*", poweredBy());
+app.use("*", globalRateLimiter());
+
 
 app.use("*", i18nMiddleware);
 app.route("/auth", authRoutes);
