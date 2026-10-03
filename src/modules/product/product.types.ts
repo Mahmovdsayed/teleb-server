@@ -7,6 +7,8 @@ export type ProductTranslation = InferSelectModel<typeof productTranslationTable
 export type ProductImage = InferSelectModel<typeof productImageTable>;
 export type ProductVariant = InferSelectModel<typeof productVariantTable>;
 
+export type Locale = "ar" | "en";
+
 export interface ProductWithRelations extends Product {
   translations: ProductTranslation[];
   images: ProductImage[];
@@ -18,11 +20,9 @@ export interface ProductResponse {
   slug: string;
   status: "active" | "inactive";
   isBestSeller: boolean;
-  isFreeShipping: boolean;
   isCustomizable: boolean;
   warranty: number;
   weight: string | null;
-  viewCount: number;
   translation: ProductTranslation | null;
   images: ProductImage[];
   variants: ProductVariant[];
@@ -118,7 +118,7 @@ export interface UpdateProductImage {
 }
 
 export interface IProductService {
-  getAll(options: GetProductsOptions): Promise<{data: ProductResponse[]; total: number}>;
+  getAll(options: GetProductsOptions , local: string): Promise<{data: ProductResponse[]; total: number}>;
   getById(id: number): Promise<ProductResponse | null>;
   getBySlug(slug: string): Promise<ProductResponse | null>;
   create(data: CreateProduct, userId: number): Promise<ProductResponse>;
