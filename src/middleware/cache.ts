@@ -20,8 +20,9 @@ export const cacheMiddleware = (options: CacheOptions): MiddlewareHandler => {
     
 
     const { keyPrefix, ttl, includeQuery } = config;
+    const lang = (c.get("lang") as string) || "en";
     const query = includeQuery ? new URL(c.req.url).search : "";
-    const key = `${keyPrefix}:${c.req.path}${query}`;
+    const key = `${keyPrefix}:${lang}:${c.req.path}${query}`;
 
     try {
       const cachedData = await redis.get(key);

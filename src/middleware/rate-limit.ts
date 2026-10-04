@@ -186,8 +186,8 @@ export const adminRateLimiter = (
   options?: Partial<RateLimitOptions>,
 ): MiddlewareHandler =>
   rateLimiter({
-    windowMs: 15 * 60 * 1000,
-    max: 30,
+    windowMs: 60 * 60 * 1000,
+    max: 50,
     message: "Too many requests, please try again later.",
     standardHeaders: true,
     keyGenerator: (c) =>

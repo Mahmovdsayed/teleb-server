@@ -1,9 +1,16 @@
 import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
-import type { productImageTable, productTable, productTranslationTable, productVariantTable } from "../../database/schemas";
+import type {
+  productImageTable,
+  productTable,
+  productTranslationTable,
+  productVariantTable,
+} from "../../database/schemas";
 
 export type Product = InferSelectModel<typeof productTable>;
 export type NewProduct = InferInsertModel<typeof productTable>;
-export type ProductTranslation = InferSelectModel<typeof productTranslationTable>;
+export type ProductTranslation = InferSelectModel<
+  typeof productTranslationTable
+>;
 export type ProductImage = InferSelectModel<typeof productImageTable>;
 export type ProductVariant = InferSelectModel<typeof productVariantTable>;
 
@@ -21,11 +28,11 @@ export interface ProductResponse {
   status: "active" | "inactive";
   isBestSeller: boolean;
   isCustomizable: boolean;
-  warranty: number;
-  weight: string | null;
-  translation: ProductTranslation | null;
+  warranty?: number;
+  weight?: string | null;
+  translations: ProductTranslation[];
   images: ProductImage[];
-  variants: ProductVariant[];
+  variants?: ProductVariant[];
 }
 
 export interface CreateProduct {
@@ -34,7 +41,6 @@ export interface CreateProduct {
   slug: string;
   status?: "active" | "inactive";
   isBestSeller?: boolean;
-  isFreeShipping?: boolean;
   isCustomizable?: boolean;
   warranty?: number;
   weight?: string | null;
@@ -51,7 +57,6 @@ export interface UpdateProduct {
   slug?: string;
   status?: "active" | "inactive";
   isBestSeller?: boolean;
-  isFreeShipping?: boolean;
   isCustomizable?: boolean;
   warranty?: number;
   weight?: string | null;
@@ -97,10 +102,14 @@ export interface GetProductsOptions {
   offerId?: number;
   status?: "active" | "inactive";
   bestSeller?: boolean;
-  search?: string;
-  tag?: string;
   sort?: "createdAt" | "name";
   order?: "asc" | "desc";
+}
+
+export interface SearchProductOptions {
+  q: string;
+  page: number;
+  limit: number;
 }
 
 export interface CreateProductImage {
@@ -118,20 +127,41 @@ export interface UpdateProductImage {
 }
 
 export interface IProductService {
-  getAll(options: GetProductsOptions , local: string): Promise<{data: ProductResponse[]; total: number}>;
-  getById(id: number): Promise<ProductResponse | null>;
-  getBySlug(slug: string): Promise<ProductResponse | null>;
+  getAll(
+    options: GetProductsOptions,
+    local: string,
+  ): Promise<{ data: ProductResponse[]; total: number }>;
+  search(
+    options: SearchProductOptions,
+    locale: Locale,
+  ): Promise<{ data: ProductResponse[]; total: number }>;
+  getById(id: number, locale: Locale): Promise<ProductResponse | null>;
+  getBySlug(slug: string, locale: Locale): Promise<ProductResponse | null>;
   create(data: CreateProduct, userId: number): Promise<ProductResponse>;
   update(id: number, data: UpdateProduct): Promise<ProductResponse>;
   delete(id: number): Promise<void>;
-  updateStatus(id: number, status: "active" | "inactive"): Promise<ProductResponse>;
+  updateStatus(
+    id: number,
+    status: "active" | "inactive",
+  ): Promise<ProductResponse>;
   updateBestSeller(id: number, value: boolean): Promise<ProductResponse>;
   addImage(productId: number, data: CreateProductImage): Promise<ProductImage>;
-  updateImage(productId: number, imageId: number, data: UpdateProductImage): Promise<ProductImage>;
+  updateImage(
+    productId: number,
+    imageId: number,
+    data: UpdateProductImage,
+  ): Promise<ProductImage>;
   deleteImage(productId: number, imageId: number): Promise<void>;
   setMainImage(productId: number, imageId: number): Promise<ProductImage>;
   reorderImages(productId: number, imageIds: number[]): Promise<void>;
-  addVariant(productId: number, data: CreateProductVariant): Promise<ProductVariant>;
-  updateVariant(productId: number, variantId: number, data: UpdateProductVariant): Promise<ProductVariant>;
+  addVariant(
+    productId: number,
+    data: CreateProductVariant,
+  ): Promise<ProductVariant>;
+  updateVariant(
+    productId: number,
+    variantId: number,
+    data: UpdateProductVariant,
+  ): Promise<ProductVariant>;
   deleteVariant(productId: number, variantId: number): Promise<void>;
 }

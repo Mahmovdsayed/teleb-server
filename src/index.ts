@@ -4,6 +4,7 @@ import authRoutes from "./modules/auth/auth.routes";
 import { logger } from "hono/logger";
 import type { AppEnv } from "./types/app";
 import collectionsRoutes from "./modules/collection/collection.routes";
+import productRoutes from "./modules/product/product.routes";
 import { compress } from "hono/compress";
 import { secureHeaders } from "hono/secure-headers";
 import { poweredBy } from "hono/powered-by";
@@ -22,6 +23,7 @@ app.use("*", globalRateLimiter());
 app.use("*", i18nMiddleware);
 app.route("/auth", authRoutes);
 app.route("/collection", collectionsRoutes);
+app.route("/products", productRoutes);
 
 app.get("/", (c) => {
   return c.json({
