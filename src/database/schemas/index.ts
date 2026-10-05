@@ -5,3 +5,5 @@ export * from "./product_variants"
 export * from "./product_translations"
 export * from "./product_images"
 export * from "./offer"
+export * from "./banner";
+export * from "./message";

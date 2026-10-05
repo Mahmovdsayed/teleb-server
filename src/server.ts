@@ -1,8 +1,9 @@
 import app from "./index";
-
-const isDevelopment = Bun.env.NODE_ENV === "development";
+import { env } from "./config/env";
 
 Bun.serve({
-  ...(isDevelopment ? { port: 3000 } : {}),
+  port: env.PORT,
   fetch: app.fetch,
 });
+
+console.log(`🚀 Teleb server running on port ${env.PORT} [${env.NODE_ENV}]`);

@@ -26,5 +26,6 @@ export const productTable = pgTable(
     index("products_offer_id_idx").on(table.offerId),
     index("products_status_idx").on(table.status),
     index("products_best_seller_idx").on(table.status, table.isBestSeller),
+    index("products_created_at_idx").on(table.createdAt),
   ],
 );

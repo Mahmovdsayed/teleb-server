@@ -9,6 +9,9 @@ interface IAuthService {
   signIn(input: SignInInput): Promise<any>;
 }
 
+// Precomputed Argon2id dummy hash for constant-time comparison when email is not found
+const DUMMY_HASH = "$argon2id$v=19$m=65536,t=2,p=1$PoiUcKWVemFaNBRwrok1P39aZFXXYCmUjNNTrRwcv9Q$SjwRw+TncLLh0EXs9QVSAZN6hTsoCLTSSXVsNz2n4mo";
+
 class AuthService implements IAuthService {
   public async signUp(input: SignUpInput): Promise<any> {
     const existingUser = await db
@@ -40,8 +43,15 @@ class AuthService implements IAuthService {
       .where(eq(userTable.email, input.email))
       .limit(1);
 
-    if (!user || !user.password) throw new Error("INVALID_CREDENTIALS");
-    const isPasswordValid = await PasswordService.verifyPassword({password: input.password, hash: user.password});
+    if (!user || !user.password) {
+      await PasswordService.verifyPassword({ password: input.password, hash: DUMMY_HASH });
+      throw new Error("INVALID_CREDENTIALS");
+    }
+
+    const isPasswordValid = await PasswordService.verifyPassword({
+      password: input.password,
+      hash: user.password,
+    });
     if (!isPasswordValid) throw new Error("INVALID_CREDENTIALS");
 
     return user;

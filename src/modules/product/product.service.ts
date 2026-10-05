@@ -148,10 +148,6 @@ class ProductService implements IProductService {
             eq(productTranslationTable.locale, locale),
           ),
         )
-        .leftJoin(
-          collectionTable,
-          eq(collectionTable.id, productTable.collectionId),
-        )
         .where(where)
         .orderBy(orderBy)
         .limit(limit)
@@ -160,17 +156,6 @@ class ProductService implements IProductService {
       db
         .select({ count: count() })
         .from(productTable)
-        .leftJoin(
-          productTranslationTable,
-          and(
-            eq(productTranslationTable.productId, productTable.id),
-            eq(productTranslationTable.locale, locale),
-          ),
-        )
-        .leftJoin(
-          collectionTable,
-          eq(collectionTable.id, productTable.collectionId),
-        )
         .where(where),
     ]);
 

@@ -18,7 +18,7 @@ export function zValidate<S extends z.ZodTypeAny>(target: Target, schema: S) {
           path: iss.path.join("."),
           message: iss.message,
         })),
-      });
+      }, 400);
     }
 
     return result.data;
