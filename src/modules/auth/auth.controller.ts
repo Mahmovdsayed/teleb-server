@@ -10,17 +10,25 @@ type SignUpContext = AppContext<{ out: { json: SignUpInput } }>;
 type SignInContext = AppContext<{ out: { json: SignInInput } }>;
 
 const isProduction = env.NODE_ENV === "production";
-const cookieDomain = env.COOKIE_DOMAIN || (isProduction ? ".teleb-furniture.com" : undefined);
+const cookieDomain =
+  env.COOKIE_DOMAIN || (isProduction ? ".teleb-furniture.com" : undefined);
 
 export const signUpController = async (c: SignUpContext) => {
   try {
     const input = c.req.valid("json");
     const user = await authService.signUp(input);
 
-    return c.json({ success: true, message: t(c, "auth.signupSuccess"), data: user });
+    return c.json({
+      success: true,
+      message: t(c, "auth.signupSuccess"),
+      data: user,
+    });
   } catch (error) {
     if (error instanceof Error && error.message === "EMAIL_ALREADY_EXISTS") {
-      return c.json({ success: false, message: t(c, "auth.emailAlreadyExists") }, 409);
+      return c.json(
+        { success: false, message: t(c, "auth.emailAlreadyExists") },
+        409,
+      );
     }
     throw error;
   }
@@ -49,11 +57,14 @@ export const signInController = async (c: SignInContext) => {
     return c.json({
       success: true,
       message: t(c, "auth.signinSuccess"),
-      data: { id: user.id, name: user.name, email: user.email },
+      data: { user: { id: user.id, name: user.name, email: user.email } },
     });
   } catch (error) {
     if (error instanceof Error && error.message === "INVALID_CREDENTIALS") {
-      return c.json({ success: false, message: t(c, "auth.invalidCredentials") }, 401);
+      return c.json(
+        { success: false, message: t(c, "auth.invalidCredentials") },
+        401,
+      );
     }
 
     throw error;

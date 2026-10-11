@@ -25,6 +25,7 @@ export const en = {
     notFound: "Collection not found",
     deleted: "Collection deleted successfully",
     deleteFailed: "Failed to delete collection",
+    hasProducts: "Cannot delete this collection because it contains products",
   },
   product: {
     created: "Product created successfully",

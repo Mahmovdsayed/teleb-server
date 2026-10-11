@@ -25,6 +25,7 @@ export const ar = {
     notFound: "المجموعة غير موجودة",
     deleted: "تم حذف المجموعة بنجاح",
     deleteFailed: "فشل حذف المجموعة",
+    hasProducts: "لا يمكن حذف هذه المجموعة لأنها تحتوي على منتجات",
   },
   product: {
     created: "تم إنشاء المنتج بنجاح",
