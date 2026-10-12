@@ -8,6 +8,9 @@ import type {
 
 interface ICollectionService {
   get(): Promise<Omit<typeof collectionTable.$inferSelect, "userId">[]>;
+  getById(
+    id: number,
+  ): Promise<Omit<typeof collectionTable.$inferSelect, "userId">[]>;
   create(
     input: CreateCollectionInput,
     userId: number,
@@ -32,6 +35,24 @@ class CollectionService implements ICollectionService {
         updatedAt: collectionTable.updatedAt,
       })
       .from(collectionTable);
+  }
+  public async getById(id: number) {
+    const results = await db
+      .select({
+        id: collectionTable.id,
+        arName: collectionTable.arName,
+        enName: collectionTable.enName,
+        icon: collectionTable.icon,
+        createdAt: collectionTable.createdAt,
+        updatedAt: collectionTable.updatedAt,
+      })
+      .from(collectionTable)
+      .where(eq(collectionTable.id, id))
+      .limit(1);
+
+      if(!results[0]) throw new Error("COLLECTION_NOT_FOUND");
+
+    return results;
   }
   public async create(input: CreateCollectionInput, userId: number) {
     const [collection] = await db
@@ -82,8 +103,8 @@ class CollectionService implements ICollectionService {
       .from(productTable)
       .where(eq(productTable.collectionId, collectionId));
 
-    if (Number(result?.total ?? 0) > 0) throw new Error("COLLECTION_HAS_PRODUCTS");
-    
+    if (Number(result?.total ?? 0) > 0)
+      throw new Error("COLLECTION_HAS_PRODUCTS");
 
     await db
       .delete(collectionTable)

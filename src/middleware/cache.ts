@@ -15,62 +15,76 @@ function getNormalizedQuery(urlStr: string): string {
     const entries = Array.from(url.searchParams.entries()).sort(([a], [b]) =>
       a.localeCompare(b),
     );
+
     if (entries.length === 0) return "";
     const sorted = new URLSearchParams();
-    for (const [k, v] of entries) {
-      sorted.append(k, v);
+
+    for (const [key, value] of entries) {
+      sorted.append(key, value);
     }
+
     return `?${sorted.toString()}`;
   } catch {
     return "";
   }
 }
 
+function setCacheHeaders(
+  c: Parameters<MiddlewareHandler>[0],
+  clientTtl: number,
+  cacheStatus: "HIT" | "MISS",
+) {
+  c.header("X-Cache", cacheStatus);
+  c.header(
+    "Cache-Control",
+    `public, max-age=${clientTtl}, s-maxage=${clientTtl * 5}, stale-while-revalidate=600`,
+  );
+}
+
 export const cacheMiddleware = (options: CacheOptions): MiddlewareHandler => {
-  const config = {
-    ttl: CACHE_TTL,
-    includeQuery: true,
-    clientTtl: 60,
-    ...options,
-  };
+  const {
+    keyPrefix,
+    ttl = CACHE_TTL,
+    includeQuery = true,
+    clientTtl = 60,
+  } = options;
 
   return async (c, next) => {
-    if (!redis || redis.status !== "ready") return next();
+    if (!redis || redis.status !== "ready") {
+      await next();
+      return;
+    }
 
-    const { keyPrefix, ttl, includeQuery, clientTtl } = config;
     const lang = (c.get("lang") as string) || "en";
     const query = includeQuery ? getNormalizedQuery(c.req.url) : "";
     const key = `${keyPrefix}:${lang}:${c.req.path}${query}`;
+    const lockKey = `teleb:lock:${key}`;
+
+    let acquired = false;
+    let downstreamExecuted = false;
 
     try {
       const cachedData = await redis.get(key);
-      if (cachedData) {
-        c.header("X-Cache", "HIT");
-        c.header(
-          "Cache-Control",
-          `public, max-age=${clientTtl}, s-maxage=${clientTtl * 5}, stale-while-revalidate=600`,
-        );
+
+      if (cachedData !== null) {
+        setCacheHeaders(c, clientTtl, "HIT");
+
         return c.body(cachedData, 200, {
           "Content-Type": "application/json; charset=UTF-8",
         });
       }
 
-      const lockKey = `teleb:lock:${key}`;
-      const acquired = await redis.set(lockKey, "1", "PX", 4000, "NX");
+      acquired = Boolean(await redis.set(lockKey, "1", "PX", 4000, "NX"));
 
       if (!acquired) {
-        const pollInterval = 50;
-        const maxAttempts = 20;
+        for (let attempt = 0; attempt < 20; attempt++) {
+          await new Promise((resolve) => setTimeout(resolve, 50));
 
-        for (let attempt = 0; attempt < maxAttempts; attempt++) {
-          await new Promise((r) => setTimeout(r, pollInterval));
           const polledData = await redis.get(key);
-          if (polledData) {
-            c.header("X-Cache", "HIT");
-            c.header(
-              "Cache-Control",
-              `public, max-age=${clientTtl}, s-maxage=${clientTtl * 5}, stale-while-revalidate=600`,
-            );
+
+          if (polledData !== null) {
+            setCacheHeaders(c, clientTtl, "HIT");
+
             return c.body(polledData, 200, {
               "Content-Type": "application/json; charset=UTF-8",
             });
@@ -78,32 +92,33 @@ export const cacheMiddleware = (options: CacheOptions): MiddlewareHandler => {
         }
       }
 
-      try {
-        await next();
-        const response = c.res;
+      downstreamExecuted = true;
+      await next();
 
-        if (
-          response.ok &&
-          response.headers.get("content-type")?.includes("application/json")
-        ) {
-          const body = await response.clone().text();
-          await redis.setex(key, ttl, body);
-          c.header("X-Cache", "MISS");
-          c.header(
-            "Cache-Control",
-            `public, max-age=${clientTtl}, s-maxage=${clientTtl * 5}, stale-while-revalidate=600`,
-          );
-        }
-      } finally {
-        if (acquired) {
-          await redis.del(lockKey).catch(() => {});
-        }
+      const response = c.res;
+
+      if (
+        response.ok &&
+        response.status === 200 &&
+        response.headers.get("content-type")?.includes("application/json")
+      ) {
+        const body = await response.clone().text();
+
+        await redis.setex(key, ttl, body);
+        setCacheHeaders(c, clientTtl, "MISS");
       }
-
-      return;
     } catch (error) {
       console.error("Cache middleware error:", error);
-      return next();
+
+      if (!downstreamExecuted) {
+        await next();
+      }
+    } finally {
+      if (acquired) {
+        await redis.del(lockKey).catch((error) => {
+          console.error("Cache lock cleanup error:", error);
+        });
+      }
     }
   };
 };
@@ -113,6 +128,7 @@ export const invalidateCache = async (pattern: string): Promise<number> => {
 
   try {
     const searchPattern = pattern.includes("*") ? pattern : `${pattern}*`;
+
     let cursor = "0";
     let totalDeleted = 0;
 
@@ -124,11 +140,11 @@ export const invalidateCache = async (pattern: string): Promise<number> => {
         "COUNT",
         100,
       );
+
       cursor = nextCursor;
 
       if (keys.length > 0) {
-        await redis.del(...keys);
-        totalDeleted += keys.length;
+        totalDeleted += await redis.del(...keys);
       }
     } while (cursor !== "0");
 

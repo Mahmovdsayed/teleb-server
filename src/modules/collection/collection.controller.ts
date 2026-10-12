@@ -12,6 +12,9 @@ type CreateCollection = AppContext<{ out: { json: CreateCollectionInput } }>;
 type UpdateCollection = AppContext<{
   out: { json: UpdateCollectionInput; param: ParamRequest };
 }>;
+type GetCollectionById = AppContext<{
+  out: { param: ParamRequest };
+}>;
 type DeleteCollection = AppContext<{ out: { param: ParamRequest } }>;
 
 export const createCollectionController = async (c: CreateCollection) => {
@@ -60,6 +63,7 @@ export const updateCollectionController = async (c: UpdateCollection) => {
         success: false,
         message: t(c, "collection.updateFailed"),
       });
+    console.log(error);
     return c.json({
       success: false,
       message: t(c, "common.internalServerError"),
@@ -104,6 +108,25 @@ export const getCollections = async (c: AppContext) => {
     const collections = await collection.get();
     return c.json({ success: true, data: collections });
   } catch (error) {
+    return c.json({
+      success: false,
+      message: t(c, "common.internalServerError"),
+    });
+  }
+};
+
+export const getCollectionById = async (c: GetCollectionById) => {
+  try {
+    const { id } = c.req.valid("param");
+    const data = await collection.getById(id);
+    return c.json({ success: true, data });
+  } catch (error) {
+    if (error instanceof Error && error.message === "COLLECTION_NOT_FOUND")
+      return c.json({
+        success: false,
+        code: "COLLECTION_NOT_FOUND",
+        message: t(c, "collection.notFound"),
+      });
     return c.json({
       success: false,
       message: t(c, "common.internalServerError"),

@@ -3,7 +3,7 @@ import type { AppEnv } from "../../types/app";
 import { requireAuth } from "../../middleware/auth";
 import { zValidate } from "../../middleware/validate";
 import { createCollectionSchema, updateCollectionSchema } from "./collection.schemas";
-import { createCollectionController, deleteCollectionController, getCollections, updateCollectionController } from "./collection.controller";
+import { createCollectionController, deleteCollectionController, getCollectionById, getCollections, updateCollectionController } from "./collection.controller";
 import { paramValidationSchema } from "../../validation/global/param.validation";
 import { cacheMiddleware } from "../../middleware/cache";
 import { adminRateLimiter } from "../../middleware/rate-limit";
@@ -14,5 +14,5 @@ collectionsRoutes.post("/create", requireAuth(), adminRateLimiter(), zValidate("
 collectionsRoutes.patch("/update/:id", requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), zValidate("json", updateCollectionSchema), updateCollectionController);
 collectionsRoutes.delete("/delete/:id", requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), deleteCollectionController);
 collectionsRoutes.get("/get", cacheMiddleware({keyPrefix:"Collections"}), getCollections);
-
+collectionsRoutes.get("/get/:id", cacheMiddleware({keyPrefix:"Collections"}), zValidate("param", paramValidationSchema), getCollectionById)
 export default collectionsRoutes;
