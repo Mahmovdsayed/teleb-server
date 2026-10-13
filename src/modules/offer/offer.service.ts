@@ -118,27 +118,7 @@ class OfferService implements IOfferService {
     }
 
     try {
-      if (data.showBanner === true) {
-        return await db.transaction(async (tx) => {
-          await tx
-            .update(offerTable)
-            .set({ showBanner: false, updatedAt: new Date() })
-            .where(eq(offerTable.showBanner, true));
-
-          const [offer] = await tx
-            .insert(offerTable)
-            .values({
-              ...data,
-              createdBy: userId,
-            })
-            .returning();
-
-          if (!offer) throw new Error("OFFER_CREATE_FAILED");
-          return offer;
-        });
-      }
-
-      const [offer] = await db
+      const insertOffer = db
         .insert(offerTable)
         .values({
           ...data,
@@ -146,12 +126,39 @@ class OfferService implements IOfferService {
         })
         .returning();
 
-      if (!offer) throw new Error("OFFER_CREATE_FAILED");
+      if (data.showBanner === true) {
+        const results = await db.batch([
+          db
+            .update(offerTable)
+            .set({
+              showBanner: false,
+              updatedAt: new Date(),
+            })
+            .where(eq(offerTable.showBanner, true)),
+          insertOffer,
+        ]);
+
+        const [offer] = results[1] as OfferResponse[];
+
+        if (!offer) {
+          throw new Error("OFFER_CREATE_FAILED");
+        }
+
+        return offer;
+      }
+
+      const [offer] = await insertOffer;
+
+      if (!offer) {
+        throw new Error("OFFER_CREATE_FAILED");
+      }
+
       return offer;
     } catch (error) {
       if (isUniqueConstraintError(error)) {
         throw new Error("OFFER_BANNER_ALREADY_EXISTS");
       }
+
       throw error;
     }
   }

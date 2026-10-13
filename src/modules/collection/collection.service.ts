@@ -50,7 +50,7 @@ class CollectionService implements ICollectionService {
       .where(eq(collectionTable.id, id))
       .limit(1);
 
-      if(!results[0]) throw new Error("COLLECTION_NOT_FOUND");
+    if (!results) throw new Error("COLLECTION_NOT_FOUND");
 
     return results;
   }

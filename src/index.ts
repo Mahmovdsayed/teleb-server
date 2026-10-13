@@ -54,7 +54,7 @@ const productionOrigins = [
 
 const devOrigins = [
   ...productionOrigins,
-  // "http://localhost:3000",
+  "http://localhost:3000",
 ];
 
 const defaultAllowedOrigins =

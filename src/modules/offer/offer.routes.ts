@@ -28,10 +28,10 @@ const offerRoutes = new Hono<AppEnv>();
 offerRoutes.get("/", cacheMiddleware({ keyPrefix: "Offers" }), zValidate("query", offerQuerySchema), getAllOffersController);
 offerRoutes.get("/banner",cacheMiddleware({ keyPrefix: "Offers" }),getCurrentBannerOfferController);
 offerRoutes.get("/:id",cacheMiddleware({ keyPrefix: "Offers" }),zValidate("param", paramValidationSchema),getOfferByIdController);
-offerRoutes.post("/", requireAuth(), adminRateLimiter(), zValidate("json", createOfferSchema), createOfferController);
-offerRoutes.patch("/:id/status",requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), zValidate("json", updateOfferStatusSchema), updateOfferStatusController);
-offerRoutes.patch("/:id/show-banner",requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), zValidate("json", updateOfferShowBannerSchema), updateOfferShowBannerController);
-offerRoutes.patch("/:id",requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), zValidate("json", updateOfferSchema), updateOfferController);
-offerRoutes.delete("/:id",requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), deleteOfferController);
+offerRoutes.post("/create", requireAuth(), adminRateLimiter(), zValidate("json", createOfferSchema), createOfferController);
+offerRoutes.patch("/update/:id/status",requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), zValidate("json", updateOfferStatusSchema), updateOfferStatusController);
+offerRoutes.patch("/update/:id/show-banner",requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), zValidate("json", updateOfferShowBannerSchema), updateOfferShowBannerController);
+offerRoutes.patch("/update/:id",requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), zValidate("json", updateOfferSchema), updateOfferController);
+offerRoutes.delete("/delete/:id",requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), deleteOfferController);
 
 export default offerRoutes;
