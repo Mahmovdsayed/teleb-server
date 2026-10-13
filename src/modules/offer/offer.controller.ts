@@ -38,6 +38,7 @@ export const getOfferByIdController = async (c: GetOfferByIdCtx) => {
     const offer = await offerService.getById(id);
     return c.json({ success: true, data: offer });
   } catch (error) {
+    console.error("updateOfferController error:", error);
     if (error instanceof Error && error.message === "OFFER_NOT_FOUND") {
       return c.json({ success: false, message: t(c, "offer.notFound") });
     }
@@ -66,6 +67,7 @@ export const createOfferController = async (c: CreateOfferCtx) => {
       data: offer,
     });
   } catch (error) {
+    console.error("createOfferController error:", error);
     if (error instanceof Error && error.message === "OFFER_BANNER_ALREADY_EXISTS") {
       return c.json({ success: false, message: t(c, "offer.bannerAlreadyExists") });
     }

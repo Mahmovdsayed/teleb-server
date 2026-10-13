@@ -188,24 +188,24 @@ class OfferService implements IOfferService {
 
     try {
       if (data.showBanner === true) {
-        return await db.transaction(async (tx) => {
-          await tx
+        const results = await db.batch([
+          db
             .update(offerTable)
             .set({ showBanner: false, updatedAt: new Date() })
-            .where(and(eq(offerTable.showBanner, true), ne(offerTable.id, id)));
-
-          const [updated] = await tx
+            .where(and(eq(offerTable.showBanner, true), ne(offerTable.id, id))),
+          db
             .update(offerTable)
             .set({
               ...data,
               updatedAt: new Date(),
             })
             .where(eq(offerTable.id, id))
-            .returning();
+            .returning(),
+        ]);
 
-          if (!updated) throw new Error("OFFER_NOT_FOUND");
-          return updated;
-        });
+        const [updated] = results[1] as OfferResponse[];
+        if (!updated) throw new Error("OFFER_NOT_FOUND");
+        return updated;
       }
 
       const [updated] = await db
@@ -272,32 +272,24 @@ class OfferService implements IOfferService {
         return updated;
       }
 
-      return await db.transaction(async (tx) => {
-        const [existing] = await tx
-          .select({ id: offerTable.id })
-          .from(offerTable)
-          .where(eq(offerTable.id, id))
-          .limit(1);
-
-        if (!existing) throw new Error("OFFER_NOT_FOUND");
-
-        await tx
+      const results = await db.batch([
+        db
           .update(offerTable)
           .set({ showBanner: false, updatedAt: new Date() })
-          .where(and(eq(offerTable.showBanner, true), ne(offerTable.id, id)));
-
-        const [updated] = await tx
+          .where(and(eq(offerTable.showBanner, true), ne(offerTable.id, id))),
+        db
           .update(offerTable)
           .set({
             showBanner: true,
             updatedAt: new Date(),
           })
           .where(eq(offerTable.id, id))
-          .returning();
+          .returning(),
+      ]);
 
-        if (!updated) throw new Error("OFFER_NOT_FOUND");
-        return updated;
-      });
+      const [updated] = results[1] as OfferResponse[];
+      if (!updated) throw new Error("OFFER_NOT_FOUND");
+      return updated;
     } catch (error) {
       if (isUniqueConstraintError(error)) {
         throw new Error("OFFER_BANNER_ALREADY_EXISTS");

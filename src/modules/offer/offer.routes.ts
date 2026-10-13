@@ -25,9 +25,9 @@ import {
 
 const offerRoutes = new Hono<AppEnv>();
 
-offerRoutes.get("/", cacheMiddleware({ keyPrefix: "Offers" }), zValidate("query", offerQuerySchema), getAllOffersController);
+offerRoutes.get("/get", cacheMiddleware({ keyPrefix: "Offers" }), zValidate("query", offerQuerySchema), getAllOffersController);
 offerRoutes.get("/banner",cacheMiddleware({ keyPrefix: "Offers" }),getCurrentBannerOfferController);
-offerRoutes.get("/:id",cacheMiddleware({ keyPrefix: "Offers" }),zValidate("param", paramValidationSchema),getOfferByIdController);
+offerRoutes.get("/get/:id",cacheMiddleware({ keyPrefix: "Offers" }),zValidate("param", paramValidationSchema),getOfferByIdController);
 offerRoutes.post("/create", requireAuth(), adminRateLimiter(), zValidate("json", createOfferSchema), createOfferController);
 offerRoutes.patch("/update/:id/status",requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), zValidate("json", updateOfferStatusSchema), updateOfferStatusController);
 offerRoutes.patch("/update/:id/show-banner",requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), zValidate("json", updateOfferShowBannerSchema), updateOfferShowBannerController);
