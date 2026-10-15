@@ -27,11 +27,11 @@ import {
 
 const bannerRoutes = new Hono<AppEnv>();
 
-bannerRoutes.get("/", cacheMiddleware({ keyPrefix: "Banners" }), getAllBannersController);
-bannerRoutes.get("/:id", cacheMiddleware({ keyPrefix: "Banners" }), zValidate("param", paramValidationSchema), getBannerByIdController);
-bannerRoutes.post("/", requireAuth(), adminRateLimiter(), zValidate("json", createBannerSchema), createBannerController);
-bannerRoutes.patch("/:id", requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), zValidate("json", updateBannerSchema), updateBannerController);
-bannerRoutes.delete("/:id", requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), deleteBannerController);
+bannerRoutes.get("/get", cacheMiddleware({ keyPrefix: "Banners" }), getAllBannersController);
+bannerRoutes.get("/get/:id", cacheMiddleware({ keyPrefix: "Banners" }), zValidate("param", paramValidationSchema), getBannerByIdController);
+bannerRoutes.post("/create", requireAuth(), adminRateLimiter(), zValidate("json", createBannerSchema), createBannerController);
+bannerRoutes.patch("/update/:id", requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), zValidate("json", updateBannerSchema), updateBannerController);
+bannerRoutes.delete("/delete/:id", requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), deleteBannerController);
 bannerRoutes.post("/:id/images", requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), zValidate("json", addBannerImageSchema), addBannerImageController);
 bannerRoutes.patch("/:id/images/reorder", requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), zValidate("json", reorderBannerImagesSchema), reorderBannerImagesController);
 bannerRoutes.patch("/:id/images/:imageId", requireAuth(), adminRateLimiter(), zValidate("param", bannerImageParamSchema), zValidate("json", updateBannerImageSchema), updateBannerImageController);

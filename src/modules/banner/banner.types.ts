@@ -41,7 +41,11 @@ export interface IBannerService {
   update(id: number, data: UpdateBanner): Promise<BannerResponse>;
   delete(id: number): Promise<void>;
   addImage(bannerId: number, data: AddBannerImage): Promise<BannerResponse>;
-  updateImage(bannerId: number, imageId: number, data: UpdateBannerImage): Promise<BannerResponse>;
+  updateImage(
+    bannerId: number,
+    imageId: number,
+    data: UpdateBannerImage,
+  ): Promise<BannerResponse>;
   deleteImage(bannerId: number, imageId: number): Promise<BannerResponse>;
   reorderImages(bannerId: number, imageIds: number[]): Promise<BannerResponse>;
 }
