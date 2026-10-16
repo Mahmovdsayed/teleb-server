@@ -1,8 +1,10 @@
 import { and, asc, count, desc, eq, ilike, or } from "drizzle-orm";
 import { db } from "../../database";
 import { messageTable } from "../../database/schemas";
-import { emailService } from "../../infrastructure/email/email";
-import { normalizeEmail, normalizePhone } from "../../infrastructure/email/email.utils";
+import {
+  normalizeEmail,
+  normalizePhone,
+} from "../../infrastructure/email/email.utils";
 import type {
   CreateMessage,
   GetMessagesOptions,
@@ -11,6 +13,7 @@ import type {
   MessageListItem,
   MessageResponse,
 } from "./message.types";
+import { send } from "@vercel/queue";
 
 class MessageService implements IMessageService {
   public async create(data: CreateMessage, locale: Locale): Promise<void> {
@@ -22,14 +25,8 @@ class MessageService implements IMessageService {
       .from(messageTable)
       .where(
         or(
-          and(
-            eq(messageTable.email, email),
-            eq(messageTable.isViewed, false),
-          ),
-          and(
-            eq(messageTable.phone, phone),
-            eq(messageTable.isViewed, false),
-          ),
+          and(eq(messageTable.email, email), eq(messageTable.isViewed, false)),
+          and(eq(messageTable.phone, phone), eq(messageTable.isViewed, false)),
         ),
       )
       .limit(1);
@@ -46,31 +43,24 @@ class MessageService implements IMessageService {
         phone,
         subject: data.subject.trim(),
         message: data.message.trim(),
+        category: "other",
+        priority: "medium",
         isViewed: false,
       })
       .returning();
 
-    if (!message) {
-      throw new Error("MESSAGE_CREATE_FAILED");
-    }
+    if (!message) throw new Error("MESSAGE_CREATE_FAILED");
 
-    queueMicrotask(() => {
-      emailService
-        .sendContactEmails(
-          {
-            fullName: message.fullName,
-            email: message.email,
-            phone: message.phone,
-            subject: message.subject,
-            message: message.message,
-            createdAt: message.createdAt,
-          },
-          locale,
-        )
-        .catch((error) => {
-          console.error("Failed to send contact notification emails:", error);
-        });
-    });
+    await send(
+      "contact-classification",
+      {
+        messageId: message.id,
+        locale,
+      },
+      {
+        idempotencyKey: `contact-classification-${message.id}`,
+      },
+    );
   }
 
   public async getAll(options: GetMessagesOptions): Promise<{
@@ -117,7 +107,8 @@ class MessageService implements IMessageService {
 
     const selectedColumn =
       sort && sortColumns[sort] ? sortColumns[sort] : messageTable.createdAt;
-    const orderBy = order === "asc" ? asc(selectedColumn) : desc(selectedColumn);
+    const orderBy =
+      order === "asc" ? asc(selectedColumn) : desc(selectedColumn);
 
     const [messages, countResult] = await db.batch([
       db

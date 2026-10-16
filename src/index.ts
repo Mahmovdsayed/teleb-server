@@ -17,6 +17,7 @@ import offerRoutes from "./modules/offer/offer.routes";
 import messageRoutes from "./modules/message/message.routes";
 import redis from "./helpers/redis";
 import { globalRateLimiter } from "./middleware/rate-limit";
+import "./queues/contact-classification.routes";
 
 const app = new Hono<AppEnv>().basePath("/v1");
 
@@ -52,10 +53,7 @@ const productionOrigins = [
   "https://www.teleb-furniture.com",
 ];
 
-const devOrigins = [
-  ...productionOrigins,
-  "http://localhost:3000",
-];
+const devOrigins = [...productionOrigins, "http://localhost:3000"];
 
 const defaultAllowedOrigins =
   env.NODE_ENV === "production" ? productionOrigins : devOrigins;
@@ -72,7 +70,8 @@ app.use(
     origin: (origin) => {
       if (!origin) return configuredOrigins[0]!;
       if (configuredOrigins.includes(origin)) return origin;
-      if (/^https:\/\/([a-z0-9-]+\.)*teleb-furniture\.com$/.test(origin)) return origin;
+      if (/^https:\/\/([a-z0-9-]+\.)*teleb-furniture\.com$/.test(origin))
+        return origin;
       return null;
     },
     credentials: true,

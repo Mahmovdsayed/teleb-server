@@ -16,13 +16,22 @@ export const messageTable = pgTable(
     phone: text("phone").notNull(),
     subject: text("subject").notNull(),
     message: text("message").notNull(),
+
+    category: text("category").notNull().default("other"),
+    priority: text("priority").notNull().default("medium"),
+
     isViewed: boolean("is_viewed").notNull().default(false),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     index("messages_email_viewed_idx").on(table.email, table.isViewed),
     index("messages_phone_viewed_idx").on(table.phone, table.isViewed),
     index("messages_viewed_created_idx").on(table.isViewed, table.createdAt),
+    index("messages_priority_created_idx").on(table.priority, table.createdAt),
   ],
 );

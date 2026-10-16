@@ -1,0 +1,1 @@
+export { contactClassificationHandler as POST } from "../src/queues/contact-classification.routes";
