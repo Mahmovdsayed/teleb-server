@@ -21,6 +21,8 @@ export interface MessageListItem {
   email: string;
   phone: string;
   subject: string;
+  message?: string;
+  priority: string;
   isViewed: boolean;
   createdAt: Date;
 }
@@ -33,6 +35,7 @@ export interface MessageResponse {
   subject: string;
   message: string;
   isViewed: boolean;
+  priority: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,26 +45,22 @@ export interface GetMessagesOptions {
   limit: number;
   isViewed?: boolean | undefined;
   search?: string | undefined;
-  sort?: "createdAt" | "fullName" | "email" | "subject" | "isViewed" | undefined;
+  sort?:
+    | "createdAt"
+    | "fullName"
+    | "email"
+    | "subject"
+    | "isViewed"
+    | "priority"
+    | undefined;
   order?: "asc" | "desc" | undefined;
+  priority?:"low" | "medium" | "high" | undefined;
 }
 
 export interface IMessageService {
-  create(
-    data: CreateMessage,
-    locale: Locale,
-  ): Promise<void>;
-
-  getAll(
-    options: GetMessagesOptions,
-  ): Promise<{
-    data: MessageListItem[];
-    total: number;
-  }>;
-
+  create(data: CreateMessage, locale: Locale): Promise<void>;
+  getAll(options: GetMessagesOptions): Promise<{ data: MessageListItem[]; total: number }>;
   getById(id: number): Promise<MessageResponse>;
-
   markAsViewed(id: number): Promise<MessageResponse>;
-
   delete(id: number): Promise<void>;
 }

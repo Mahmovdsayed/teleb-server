@@ -12,14 +12,15 @@ import {
   getMessageByIdController,
   markMessageAsViewedController,
 } from "./message.controller";
+import { cacheMiddleware } from "../../middleware/cache";
 
 const messageRoutes = new Hono<AppEnv>();
 
-messageRoutes.post("/", messageRateLimiter(), zValidate("json", createMessageSchema), createMessageController);
+messageRoutes.post("/create", messageRateLimiter(), zValidate("json", createMessageSchema), createMessageController);
 
-messageRoutes.get("/", requireAuth(), adminRateLimiter(), zValidate("query", messageQuerySchema), getAllMessagesController);
-messageRoutes.get("/:id", requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), getMessageByIdController);
-messageRoutes.patch("/:id/view", requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), markMessageAsViewedController);
-messageRoutes.delete("/:id", requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), deleteMessageController);
+messageRoutes.get("/get", cacheMiddleware({keyPrefix:"Messages"}), requireAuth(), adminRateLimiter(), zValidate("query", messageQuerySchema), getAllMessagesController);
+messageRoutes.get("/get/:id", cacheMiddleware({keyPrefix:"Messages"}), requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), getMessageByIdController);
+messageRoutes.patch("/update/:id/view", requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), markMessageAsViewedController);
+messageRoutes.delete("/delete/:id", requireAuth(), adminRateLimiter(), zValidate("param", paramValidationSchema), deleteMessageController);
 
 export default messageRoutes;

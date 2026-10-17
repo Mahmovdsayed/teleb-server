@@ -72,6 +72,7 @@ class MessageService implements IMessageService {
       limit = 10,
       isViewed,
       search,
+      priority,
       sort = "createdAt",
       order = "desc",
     } = options;
@@ -83,8 +84,13 @@ class MessageService implements IMessageService {
       conditions.push(eq(messageTable.isViewed, isViewed));
     }
 
-    if (search && search.trim().length > 0) {
+    if (priority !== undefined) {
+      conditions.push(eq(messageTable.priority, priority));
+    }
+
+    if (search?.trim()) {
       const pattern = `%${search.trim()}%`;
+
       conditions.push(
         or(
           ilike(messageTable.fullName, pattern),
@@ -103,10 +109,10 @@ class MessageService implements IMessageService {
       email: messageTable.email,
       subject: messageTable.subject,
       isViewed: messageTable.isViewed,
+      priority: messageTable.priority,
     };
 
-    const selectedColumn =
-      sort && sortColumns[sort] ? sortColumns[sort] : messageTable.createdAt;
+    const selectedColumn = sortColumns[sort] ?? messageTable.createdAt;
     const orderBy =
       order === "asc" ? asc(selectedColumn) : desc(selectedColumn);
 
@@ -118,6 +124,9 @@ class MessageService implements IMessageService {
           email: messageTable.email,
           phone: messageTable.phone,
           subject: messageTable.subject,
+          message: messageTable.message,
+          category: messageTable.category,
+          priority: messageTable.priority,
           isViewed: messageTable.isViewed,
           createdAt: messageTable.createdAt,
         })
@@ -131,6 +140,7 @@ class MessageService implements IMessageService {
     ]);
 
     const total = Number(countResult[0]?.count ?? 0);
+
     return { data: messages, total };
   }
 

@@ -22,8 +22,11 @@ export const messageQuerySchema = z.compile(
       .transform((v) => v === true || v === "true")
       .optional(),
     search: z.string().trim().optional(),
-    sort: z.enum(["createdAt", "fullName", "email", "subject", "isViewed"]).optional(),
+    sort: z
+      .enum(["createdAt", "fullName", "email", "subject", "isViewed","priority"])
+      .optional(),
     order: z.enum(["asc", "desc"]).optional(),
+    priority: z.enum(["low", "medium", "high"]).optional(),
   }),
 );
 
