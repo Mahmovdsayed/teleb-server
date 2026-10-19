@@ -98,7 +98,7 @@ export const offerParamSchema = paramValidationSchema;
 export const offerQuerySchema = z.compile(
   z.object({
     page: z.coerce.number().int().min(1).default(1),
-    limit: z.coerce.number().int().min(1).max(10).default(10),
+    limit: z.coerce.number().int().min(1).max(100).default(10),
     isActive: z
       .union([z.boolean(), z.enum(["true", "false"])])
       .transform((v) => v === true || v === "true")

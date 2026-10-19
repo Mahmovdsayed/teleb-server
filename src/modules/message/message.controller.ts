@@ -66,7 +66,11 @@ export const markMessageAsViewedController = async (c: MarkMessageAsViewedCtx) =
   try {
     const { id } = c.req.valid("param");
     const message = await messageService.markAsViewed(id);
-    await invalidateCache(MESSAGE_CACHE_KEY);
+
+    await Promise.all([
+      invalidateCache(MESSAGE_CACHE_KEY),
+      invalidateCache("Analytics"),
+    ]);
 
     return c.json({
       success: true,
@@ -85,7 +89,11 @@ export const deleteMessageController = async (c: DeleteMessageCtx) => {
   try {
     const { id } = c.req.valid("param");
     await messageService.delete(id);
-    await invalidateCache(MESSAGE_CACHE_KEY);
+   
+    await Promise.all([
+      invalidateCache(MESSAGE_CACHE_KEY),
+      invalidateCache("Analytics"),
+    ]);
 
     return c.json({
       success: true,

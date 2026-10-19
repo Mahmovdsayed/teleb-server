@@ -23,7 +23,12 @@ export const createCollectionController = async (c: CreateCollection) => {
     const input = c.req.valid("json");
 
     const newCollection = await collection.create(input, id);
-    await invalidateCache("Collections");
+
+    await Promise.all([
+      invalidateCache("Collections"),
+      invalidateCache("Analytics"),
+    ]);
+
     return c.json({
       success: true,
       message: t(c, "collection.created"),
@@ -77,7 +82,12 @@ export const deleteCollectionController = async (c: DeleteCollection) => {
     const { id } = c.req.valid("param");
 
     await collection.delete(id, user.id);
-    await invalidateCache("Collections");
+
+    await Promise.all([
+      invalidateCache("Collections"),
+      invalidateCache("Analytics"),
+    ]);
+    
     return c.json({ success: true, message: t(c, "collection.deleted") });
   } catch (error) {
     if (error instanceof Error) {

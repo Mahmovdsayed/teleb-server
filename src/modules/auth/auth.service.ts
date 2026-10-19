@@ -9,7 +9,6 @@ interface IAuthService {
   signIn(input: SignInInput): Promise<any>;
 }
 
-// Precomputed Argon2id dummy hash for constant-time comparison when email is not found
 const DUMMY_HASH = "$argon2id$v=19$m=65536,t=2,p=1$PoiUcKWVemFaNBRwrok1P39aZFXXYCmUjNNTrRwcv9Q$SjwRw+TncLLh0EXs9QVSAZN6hTsoCLTSSXVsNz2n4mo";
 
 class AuthService implements IAuthService {

@@ -110,7 +110,10 @@ export const createProductController = async (c: CreateProductCtx) => {
     const { id } = c.get("user");
     const input = c.req.valid("json");
     const product = await productService.create(input as CreateProduct, id);
-    await invalidateCache(PRODUCT_CACHE_KEY);
+     await Promise.all([
+         invalidateCache(PRODUCT_CACHE_KEY),
+         invalidateCache("Analytics"),
+       ]);
     return c.json({ success: true, message: t(c, "product.created"), data: product });
   } catch (error) {
     if (error instanceof Error && error.message === "PRODUCT_SLUG_ALREADY_EXISTS")
@@ -130,7 +133,10 @@ export const updateProductController = async (c: UpdateProductCtx) => {
     const { id } = c.req.valid("param");
     const input = c.req.valid("json");
     const product = await productService.update(id, input as UpdateProduct);
-    await invalidateCache(PRODUCT_CACHE_KEY);
+    await Promise.all([
+         invalidateCache(PRODUCT_CACHE_KEY),
+         invalidateCache("Analytics"),
+       ]);
     return c.json({ success: true, message: t(c, "product.updated"), data: product });
   } catch (error) {
     if (error instanceof Error && error.message === "PRODUCT_NOT_FOUND")
@@ -149,7 +155,10 @@ export const deleteProductController = async (c: DeleteProductCtx) => {
   try {
     const { id } = c.req.valid("param");
     await productService.delete(id);
-    await invalidateCache(PRODUCT_CACHE_KEY);
+  await Promise.all([
+         invalidateCache(PRODUCT_CACHE_KEY),
+         invalidateCache("Analytics"),
+       ]);
     return c.json({ success: true, message: t(c, "product.deleted") });
   } catch (error) {
     if (error instanceof Error && error.message === "PRODUCT_NOT_FOUND")
@@ -164,7 +173,10 @@ export const updateProductStatusController = async (c: UpdateStatusCtx) => {
     const { id } = c.req.valid("param");
     const { status } = c.req.valid("json");
     const product = await productService.updateStatus(id, status);
-    await invalidateCache(PRODUCT_CACHE_KEY);
+     await Promise.all([
+         invalidateCache(PRODUCT_CACHE_KEY),
+         invalidateCache("Analytics"),
+       ]);
     return c.json({ success: true, message: t(c, "product.statusUpdated"), data: product });
   } catch (error) {
     if (error instanceof Error && error.message === "PRODUCT_NOT_FOUND")

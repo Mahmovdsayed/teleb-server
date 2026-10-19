@@ -24,12 +24,16 @@ export interface ProductWithRelations extends Product {
 
 export interface ProductResponse {
   id: number;
+  collectionId?: number;
+  offerId?: number | null;
   slug: string;
   status: "active" | "inactive";
   isBestSeller: boolean;
   isCustomizable: boolean;
   warranty?: number;
   weight?: string | null;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
   translations: ProductTranslation[];
   images: ProductImage[];
   variants?: ProductVariant[];
@@ -135,7 +139,7 @@ export interface IProductService {
     options: SearchProductOptions,
     locale: Locale,
   ): Promise<{ data: ProductResponse[]; total: number }>;
-  getById(id: number, locale: Locale): Promise<ProductResponse | null>;
+  getById(id: number, locale?: string): Promise<ProductResponse | null>;
   getBySlug(slug: string, locale: Locale): Promise<ProductResponse | null>;
   create(data: CreateProduct, userId: number): Promise<ProductResponse>;
   update(id: number, data: UpdateProduct): Promise<ProductResponse>;

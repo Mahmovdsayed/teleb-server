@@ -96,4 +96,7 @@ export const en = {
     emailFailed: "Failed to send email notification",
     invalidData: "Invalid message data",
   },
+  analytics: {
+    overviewFailed: "Failed to retrieve analytics. Please try again later.",
+  },
 } as const;

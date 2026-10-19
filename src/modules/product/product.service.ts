@@ -67,12 +67,16 @@ async function buildProductResponse(id: number): Promise<ProductResponse> {
 
   return {
     id: row.product.id,
+    collectionId: row.product.collectionId,
+    offerId: row.product.offerId,
     slug: row.product.slug,
     status: row.product.status,
     isBestSeller: row.product.isBestSeller,
     isCustomizable: row.product.isCustomizable,
     warranty: row.product.warranty,
     weight: row.product.weight,
+    createdAt: row.product.createdAt,
+    updatedAt: row.product.updatedAt,
     translations,
     images,
     variants,
@@ -177,11 +181,11 @@ class ProductService implements IProductService {
       allImages = imagesRes;
     }
 
-    const imagesByProductId = new Map<number, ProductImage>();
+    const imagesByProductId = new Map<number, ProductImage[]>();
     for (const img of allImages) {
-      if (!imagesByProductId.has(img.productId)) {
-        imagesByProductId.set(img.productId, img);
-      }
+      const list = imagesByProductId.get(img.productId) ?? [];
+      list.push(img);
+      imagesByProductId.set(img.productId, list);
     }
 
     const data: ProductResponse[] = products.map(({ product, translation }) => {
@@ -199,16 +203,20 @@ class ProductService implements IProductService {
           }) => rest as ProductTranslation)(translation)
         : null;
 
-      const mainImage = imagesByProductId.get(product.id);
-
       return {
         id: product.id,
+        collectionId: product.collectionId,
+        offerId: product.offerId,
         slug: product.slug,
         status: product.status,
         isBestSeller: product.isBestSeller,
         isCustomizable: product.isCustomizable,
+        warranty: product.warranty,
+        weight: product.weight,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
         translations: listTranslation ? [listTranslation] : [],
-        images: mainImage ? [mainImage] : [],
+        images: imagesByProductId.get(product.id) ?? [],
       };
     });
 
@@ -271,9 +279,11 @@ class ProductService implements IProductService {
       allImages = imagesRes;
     }
 
-    const imageByProductId = new Map<number, ProductImage>();
+    const imageByProductId = new Map<number, ProductImage[]>();
     for (const img of allImages) {
-      imageByProductId.set(img.productId, img);
+      const list = imageByProductId.get(img.productId) ?? [];
+      list.push(img);
+      imageByProductId.set(img.productId, list);
     }
 
     const data: ProductResponse[] = products.map(({ product, translation }) => {
@@ -291,16 +301,20 @@ class ProductService implements IProductService {
           }) => rest as ProductTranslation)(translation)
         : null;
 
-      const mainImage = imageByProductId.get(product.id);
-
       return {
         id: product.id,
+        collectionId: product.collectionId,
+        offerId: product.offerId,
         slug: product.slug,
         status: product.status,
         isBestSeller: product.isBestSeller,
         isCustomizable: product.isCustomizable,
+        warranty: product.warranty,
+        weight: product.weight,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
         translations: listTranslation ? [listTranslation] : [],
-        images: mainImage ? [mainImage] : [],
+        images: imageByProductId.get(product.id) ?? [],
       };
     });
 
@@ -308,49 +322,9 @@ class ProductService implements IProductService {
   }
   public async getById(
     id: number,
-    locale: Locale,
+    _locale?: Locale,
   ): Promise<ProductResponse | null> {
-    const [result, images, variants] = await db.batch([
-      db
-        .select({ product: productTable, translation: productTranslationTable })
-        .from(productTable)
-        .leftJoin(
-          productTranslationTable,
-          and(
-            eq(productTranslationTable.productId, productTable.id),
-            eq(productTranslationTable.locale, locale),
-          ),
-        )
-        .where(eq(productTable.id, id))
-        .limit(1),
-
-      db
-        .select()
-        .from(productImageTable)
-        .where(eq(productImageTable.productId, id))
-        .orderBy(asc(productImageTable.order)),
-
-      db
-        .select()
-        .from(productVariantTable)
-        .where(eq(productVariantTable.productId, id)),
-    ]);
-
-    const row = result[0];
-    if (!row) throw new Error("PRODUCT_NOT_FOUND");
-
-    return {
-      id: row.product.id,
-      slug: row.product.slug,
-      status: row.product.status,
-      isBestSeller: row.product.isBestSeller,
-      isCustomizable: row.product.isCustomizable,
-      warranty: row.product.warranty,
-      weight: row.product.weight,
-      translations: row.translation ? [row.translation] : [],
-      images,
-      variants,
-    };
+    return buildProductResponse(id);
   }
 
   public async getBySlug(

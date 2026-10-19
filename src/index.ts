@@ -18,6 +18,7 @@ import messageRoutes from "./modules/message/message.routes";
 import redis from "./helpers/redis";
 import { globalRateLimiter } from "./middleware/rate-limit";
 import "./queues/contact-classification.routes";
+import analyticsRoutes from "./modules/analytics/analytics.routes";
 
 const app = new Hono<AppEnv>().basePath("/v1");
 
@@ -126,6 +127,7 @@ app.route("/products", productRoutes);
 app.route("/banner", bannerRoutes);
 app.route("/offer", offerRoutes);
 app.route("/message", messageRoutes);
+app.route("/analytics", analyticsRoutes);
 
 app.get("/", (c) => {
   return c.json({ success: true, redis: redis?.status === "ready" });

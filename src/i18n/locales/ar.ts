@@ -96,4 +96,7 @@ export const ar = {
     emailFailed: "فشل إرسال إشعار البريد الإلكتروني",
     invalidData: "بيانات الرسالة غير صالحة",
   },
+  analytics: {
+    overviewFailed: "تعذر تحميل الإحصائيات. يُرجى المحاولة مرة أخرى لاحقًا.",
+  },
 } as const;
