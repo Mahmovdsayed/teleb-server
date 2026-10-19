@@ -54,7 +54,7 @@ const productionOrigins = [
   "https://www.teleb-furniture.com",
 ];
 
-const devOrigins = [...productionOrigins, "http://localhost:3000"];
+const devOrigins = [...productionOrigins];
 
 const defaultAllowedOrigins =
   env.NODE_ENV === "production" ? productionOrigins : devOrigins;
