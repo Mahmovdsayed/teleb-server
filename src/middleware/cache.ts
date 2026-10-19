@@ -31,14 +31,11 @@ function getNormalizedQuery(urlStr: string): string {
 
 function setCacheHeaders(
   c: Parameters<MiddlewareHandler>[0],
-  clientTtl: number,
+  _clientTtl: number,
   cacheStatus: "HIT" | "MISS",
 ) {
   c.header("X-Cache", cacheStatus);
-  c.header(
-    "Cache-Control",
-    `public, max-age=${clientTtl}, s-maxage=${clientTtl * 5}, stale-while-revalidate=600`,
-  );
+  c.header("Cache-Control", "private, no-store");
 }
 
 export const cacheMiddleware = (options: CacheOptions): MiddlewareHandler => {
@@ -124,7 +121,13 @@ export const cacheMiddleware = (options: CacheOptions): MiddlewareHandler => {
 };
 
 export const invalidateCache = async (pattern: string): Promise<number> => {
-  if (!redis || redis.status !== "ready") return 0;
+  if (!redis || redis.status !== "ready") {
+    console.warn("[Cache] Invalidation skipped: Redis not ready", {
+      pattern,
+      status: redis?.status,
+    });
+    return 0;
+  }
 
   try {
     const searchPattern = pattern.includes("*") ? pattern : `${pattern}*`;
@@ -148,10 +151,19 @@ export const invalidateCache = async (pattern: string): Promise<number> => {
       }
     } while (cursor !== "0");
 
+    console.info("[Cache] Invalidation completed", {
+      pattern: searchPattern,
+      deleted: totalDeleted,
+    });
+
     return totalDeleted;
   } catch (error) {
-    console.error("Cache invalidation error:", error);
-    return 0;
+    console.error("[Cache] Invalidation failed", {
+      pattern,
+      error,
+    });
+
+    throw error;
   }
 };
 
