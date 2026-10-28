@@ -32,30 +32,35 @@ export async function processContactClassification(
 
   await db
     .update(messageTable)
-    .set({
-      category,
-      priority,
-      updatedAt: new Date(),
-    })
+    .set({ category, priority, updatedAt: new Date() })
     .where(eq(messageTable.id, message.id));
 
-  if (priority !== "high") {
-    return;
-  }
-  
+  const emailData = {
+    fullName: message.fullName,
+    email: message.email,
+    phone: message.phone,
+    subject: message.subject,
+    message: message.message,
+    createdAt: message.createdAt,
+  };
+
   try {
-    await emailService.sendAdminNewMessageEmail({
-      fullName: message.fullName,
-      email: message.email,
-      phone: message.phone,
-      subject: message.subject,
-      message: message.message,
-      createdAt: message.createdAt,
-    });
+    await emailService.sendMessageReceivedEmail(emailData, job.locale);
   } catch (emailError) {
     console.error(
-      `[contact-classification] Failed to send admin notification for message ${message.id}:`,
+      `[contact-classification] Failed to send customer email for message ${message.id}:`,
       emailError,
     );
+  }
+
+  if (priority === "high") {
+    try {
+      await emailService.sendAdminNewMessageEmail(emailData);
+    } catch (emailError) {
+      console.error(
+        `[contact-classification] Failed to send admin notification for message ${message.id}:`,
+        emailError,
+      );
+    }
   }
 }
