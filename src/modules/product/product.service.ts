@@ -329,48 +329,23 @@ class ProductService implements IProductService {
 
   public async getBySlug(
     slug: string,
-    locale: Locale,
+    _locale?: Locale,
   ): Promise<ProductResponse> {
+    const normalizedSlug = slug.trim().toLowerCase();
     const [result] = await db
-      .select({ product: productTable, translation: productTranslationTable })
+      .select({ id: productTable.id })
       .from(productTable)
-      .leftJoin(
-        productTranslationTable,
-        and(
-          eq(productTranslationTable.productId, productTable.id),
-          eq(productTranslationTable.locale, locale),
+      .where(
+        or(
+          eq(productTable.slug, slug),
+          eq(productTable.slug, normalizedSlug),
         ),
       )
-      .where(eq(productTable.slug, slug))
       .limit(1);
 
     if (!result) throw new Error("PRODUCT_NOT_FOUND");
 
-    const [images, variants] = await db.batch([
-      db
-        .select()
-        .from(productImageTable)
-        .where(eq(productImageTable.productId, result.product.id))
-        .orderBy(asc(productImageTable.order)),
-
-      db
-        .select()
-        .from(productVariantTable)
-        .where(eq(productVariantTable.productId, result.product.id)),
-    ]);
-
-    return {
-      id: result.product.id,
-      slug: result.product.slug,
-      status: result.product.status,
-      isBestSeller: result.product.isBestSeller,
-      isCustomizable: result.product.isCustomizable,
-      warranty: result.product.warranty,
-      weight: result.product.weight,
-      translations: result.translation ? [result.translation] : [],
-      images,
-      variants,
-    };
+    return buildProductResponse(result.id);
   }
 
   public async create(
